@@ -1,6 +1,6 @@
 from flask import request
-from data.room import Room, RoomManager, UserSidWrapper
-from data.user import User, UserManager
+from data.room import Room, UserSidWrapper
+from data.user import User
 from data.vars import Vars
 from utils.string_utils import ALPHABET_NUMBERS, random_string
 
@@ -99,9 +99,9 @@ def room_data_receive(data):
         return
     
     infoRequests.pop(update_id)
-    # could create another emit but meh lmao just sending everything
+
+    # could create another emit but meh, sending 3 diff packets isn't that bad
     emit_to_user(user_sid, "videoSet", {"user": "sync", "video": data["video_src"]})
     emit_to_user(user_sid, "timeUpdate", {"user": "sync", "reason": "initialLoad", "time": data["video_time"]})
     message = "pause" if data["paused"] else "play"
     emit_to_user(user_sid, message, {"user": "sync"})
-    print(data)

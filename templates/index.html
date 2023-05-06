@@ -8,6 +8,9 @@
 </head>
 <body>
     <input type="button" value="Create new room" onclick="new_room()">
+    <br><br>
+    <input type="text" name="Enter a room id" id="room_input">
+    <input type="button" value="Go to room" onclick="goto_room()">
 </body>
 
 <style>
@@ -17,6 +20,11 @@
 </style>
 
 <script>
+    const input = document.getElementById("room_input")
+    function goto_room() {
+        window.location.href = "/room/" + input.value
+    }
+
     async function new_room(params) {
         owo = fetch(
             "/api/new_room", { method: "POST"})
