@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Technically not hard to redo without socket.io -->
+    <!-- But for once won't reinvent the wheel, video streaming already isn't efficient. -->
+    <!-- No need to try and save a bit of bandwidth. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <header>
+    <h1>Room {{ room }}</h1><a href="/"><h1>Back to index</h1></a>
+    </header>
+
+    <input type="text" name="" id="video_selector_text">
+    <input type="button" value="Set video" onclick="set_video()">
+    <br>
+    <br>
+    <video controls autoplay id="video">
+        <source src="/static/test.mp4" type="video/mp4" id="video_player"></video>
+    </video>
+</body>
+
+<style>
+    header {
+        display: flex;
+        justify-content: center;
+        gap: 30px; /* To test but should work up to iOS 10 */
+    }
+
+    body {
+        text-align: center;
+    }
+</style>
+
+<script>
+    // Consts
+    const socket = io();
+
+    const video_selector_text = document.getElementById("video_selector_text");
+    const video_player = document.getElementById("video_player");
+    const video = document.getElementById("video");
+
+    // Thanks https://stackoverflow.com/a/15724300
+    // Not thanks apple (cookies.get() is iOS Safari 14+ only, I want iOS 13 support.)
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    const user_id = getCookie("user_id")
+    const room = "{{ room }}";
+    // on load
+    socket.emit("joinRoom", {"user_id": user_id, "room_id": room});
+</script>
+
+<script>
+    // Video selector
+    function set_video() {
+        const video_url = video_selector_text.value;
+        
+        socket.emit("setVideo", {"video": video_url, "user_id": user_id});
+        
+        video_player.setAttribute("src", video_url) 
+        video.load()
+    }
+</script>
+
+<script>
+    // Websocket communication
+    function updateTimeSocket(time, reason) {
+        if (time === undefined)
+            time = video.currentTime;
+        
+        if (reason === undefined) 
+            reason = "playpause"
+        
+        const duration = video.duration; // can't call at startup to avoid errors.
+
+        if (time > duration) {
+            alert("Invalid index");
+            return;
+        }
+        socket.emit("updateTime", {"time": time, "user_id": user_id, "reason": reason});
+    }
+
+    let eventCount = 0;
+    const updateOnEventCount = 60; // Send an update every 50 events
+
+    // ===== EVENTS =====
+
+    // onTimeUpdate
+    let prevTime = video.currentTime;
+    video.ontimeupdate = () => {
+        eventCount++
+        const newTime = video.currentTime;
+        const timeChange = newTime - prevTime;
+        
+        if (timeChange > 1 || timeChange < 0) { // If timechange is high or negative
+            updateTimeSocket(newTime, "change");
+        } else if (eventCount > updateOnEventCount) { // OR if hasn't been sent for a long time OR
+            eventCount = 0;
+            updateTimeSocket(newTime, "sync");
+        } 
+
+        prevTime = newTime;
+    };
+
+    // onPause
+    video.onpause = () => {
+        socket.emit("pause", {"user_id": user_id});
+        updateTimeSocket();
+    };
+    // onPlay
+    video.onplay = () => {
+        socket.emit("play", {"user_id": user_id});
+        updateTimeSocket();
+    };
+</script>
+
+
+<script>
+    // 100ms delay for play/pause as it can cause issues otherwise (repeating play & pause)
+    let playPauseTimeout = true
+    function setPlayPauseTimeout() { 
+        setTimeout(() => {playPauseTimeout = true}, 100);
+    }
+
+    // Listeners
+    socket.on("userJoin", (name) => {
+        console.log("User joined: " + name);
+    });
+
+    socket.on("play", (data) => {
+        if (!playPauseTimeout) return;
+        playPauseTimeout = false;
+        setPlayPauseTimeout();
+        // console.log("Got a play signal from " + data.user);
+        video.play();
+    });
+
+    socket.on("pause", (data) => {
+        if (!playPauseTimeout) return;
+        playPauseTimeout = false;
+        setPlayPauseTimeout();
+        // console.log("Got a pause signal from " + data.user);
+        video.pause();
+    });
+
+    socket.on("timeUpdate", (data) => {
+        const oldTime = video.currentTime;
+        const newTime = data.time;
+        console.log("==========")
+        console.log("Got a time ipdate signal from " + data.user);
+        console.log("New time: " + newTime + " old time: " + oldTime);
+        console.log("Reason: " + data.reason);
+        if (Math.abs(oldTime - newTime) > 1) // if more than 1s of difference resync
+            video.currentTime = data.time
+        else {
+             console.log("[!!]Sync ignored as time is too close.")
+            eventCount = 0; // Reset sync count as video is already synced.
+        }
+            
+        
+        // console.log("==========")
+    });
+
+    socket.on("videoSet", (data) => {
+        // console.log("Got a videoSet signal from " + data.user);
+        // console.log("for video src " + data.video);
+        video_player.setAttribute("src", data.video);
+        video.load()
+    });
+</script>
+</html>

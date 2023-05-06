@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch2gether - Index</title>
+</head>
+<body>
+    <input type="button" value="Create new room" onclick="new_room()">
+</body>
+
+<style>
+    body {
+        text-align: center;
+    }
+</style>
+
+<script>
+    async function new_room(params) {
+        owo = fetch(
+            "/api/new_room", { method: "POST"})
+            .then(response => { window.location.href = response.url} 
+        );
+    }
+</script>
+</html>
