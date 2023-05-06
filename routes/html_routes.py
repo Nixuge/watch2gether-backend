@@ -33,3 +33,7 @@ def room(id):
     add_userid_request(resp)
 
     return resp
+
+@app.route("/admin/")
+def admin():
+    return render_template("admin.html")

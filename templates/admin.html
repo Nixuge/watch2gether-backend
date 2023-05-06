@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin panel</title>
+</head>
+<body>
+    <h1>Bad admin panel</h1>
+    <p>Admin key:</p>
+    <input type="text" name="Enter your token here" id="token">
+    <br><br>
+    <p>filepath:</p><input type="text" name="" id="filepath">
+    <br><br>
+    <p>name:</p><input type="text" name="" id="name">
+    <br><br>
+    <input type="button" value="Add movie" onclick="add_movie()">
+</body>
+<style>
+    body {
+        text-align: center;
+    }
+</style>
+<script>
+    const token_elem = document.getElementById("token");
+    const filepath_elem = document.getElementById("filepath")
+    const name_elem = document.getElementById("name")
+    async function add_movie() {
+        const data = {
+            "token": token_elem.value,
+            "filepath": filepath_elem.value,
+            "name": name_elem.value
+        };
+        fetch(
+            "/api/add_movie", { 
+                method: "POST",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+        });
+    }
+</script>
+</html>
