@@ -1,7 +1,7 @@
 
 from flask import make_response, render_template, request
-from user import User
-from vars import Vars
+from data.user import User
+from data.vars import Vars
 
 # Unwrapping values for easier use
 app = Vars.app

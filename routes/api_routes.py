@@ -1,7 +1,7 @@
 
 from flask import redirect
 
-from vars import Vars
+from data.vars import Vars
 
 # TODO: IMPLEMENT PERMISSIONS & OTHER API THINGS
 

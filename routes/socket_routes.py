@@ -1,7 +1,8 @@
 from flask import request
-from room import Room, RoomManager, UserSidWrapper
-from user import User, UserManager
-from vars import Vars
+from data.room import Room, RoomManager, UserSidWrapper
+from data.user import User, UserManager
+from data.vars import Vars
+from utils.string_utils import ALPHABET_NUMBERS, random_string
 
 # Unwrapping values for easier use
 socketio = Vars.socketio
@@ -18,9 +19,7 @@ def emit_to_room(room: Room, message: str, data: dict | str, ommited_user: User 
         if usersid.user != ommited_user:
             emit_to_user(usersid, message, data)
 
-infoRequests: dict[str, UserSidWrapper] = {
-    
-}
+infoRequests: dict[str, UserSidWrapper] = {}
 
 @socketio.on("joinRoom")
 def join_room(data):
@@ -34,7 +33,8 @@ def join_room(data):
     if userSid:
         userSid.sid = current_sid
     else:
-        room.users_sid.append(UserSidWrapper(user, current_sid))
+        userSid = UserSidWrapper(user, current_sid)
+        room.users_sid.append(userSid)
     
     # invalidate other UserSidWrappers
     for r in room_manager.rooms: 
@@ -45,8 +45,11 @@ def join_room(data):
                 r.users_sid.remove(user_sid)
     
     print(f"{user.name} joined room {room.id}.")
-
-    emit_to_room(room, "userJoin", user.name, user)
+    
+    if len(room.users_sid) > 1: # if not alone 
+        update_id = random_string(ALPHABET_NUMBERS, 15)
+        infoRequests[update_id] = userSid
+        emit_to_room(room, "userJoin", {"name": user.name, "update_id": update_id}, user)
 
 
 @socketio.on("play")
@@ -83,3 +86,22 @@ def set_video(data):
     if user == None or room == None: return
     
     emit_to_room(room, "videoSet", {"user": user.name, "video": data["video"]}, user)
+
+
+@socketio.on("roomData")
+def room_data_receive(data):
+    update_id = data["update_id"]
+    user_sid = infoRequests.get(update_id)
+    if not user_sid:
+        # Note that this is sent back from all clients
+        # (to have the fastest response & avoid having a dead client just send back nothing)
+        # So once the first response is proceeded, the user_sid won't be present anymore in the dict
+        return
+    
+    infoRequests.pop(update_id)
+    # could create another emit but meh lmao just sending everything
+    emit_to_user(user_sid, "videoSet", {"user": "sync", "video": data["video_src"]})
+    emit_to_user(user_sid, "timeUpdate", {"user": "sync", "reason": "initialLoad", "time": data["video_time"]})
+    message = "pause" if data["paused"] else "play"
+    emit_to_user(user_sid, message, {"user": "sync"})
+    print(data)

@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 import random
 
-from user import User
+from data.user import User
 from utils.string_utils import random_string
 
 # Since the SID changes every refresh, browser change,etc (i think)

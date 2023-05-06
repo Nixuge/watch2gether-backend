@@ -39,9 +39,13 @@
 <script>
     // Consts
     const socket = io();
-    // TODO: timeout check here
+    
+    // Prevent sending emits in the first 500ms
+    timeoutDone = false
+    setTimeout(() => {timeoutDone = true}, 500);
     function emitSocket(message, data) {
-        socket.emit(message, data);
+        if (timeoutDone)
+            socket.emit(message, data);
     }
 
     const video_selector_text = document.getElementById("video_selector_text");
@@ -141,13 +145,14 @@
     }
 
     // Listeners
-    socket.on("userJoin", (name) => {
-        console.log("User joined: " + name);
+    socket.on("userJoin", (data) => {
+        console.log("User joined: " + data.name);
         // Send back room data for the new client
         emitSocket("roomData", { 
+            "update_id": data.update_id,
             "video_src": video_player.attributes.src.nodeValue,
             "video_time": video.currentTime,
-            "playing": video.paused // https://stackoverflow.com/a/6877530
+            "paused": video.paused // https://stackoverflow.com/a/6877530
         });
     });
 
@@ -155,7 +160,7 @@
         if (!playPauseTimeout) return;
         playPauseTimeout = false;
         setPlayPauseTimeout();
-        // console.log("Got a play signal from " + data.user);
+        console.log("Got a play signal from " + data.user);
         video.play();
     });
 
@@ -163,7 +168,7 @@
         if (!playPauseTimeout) return;
         playPauseTimeout = false;
         setPlayPauseTimeout();
-        // console.log("Got a pause signal from " + data.user);
+        console.log("Got a pause signal from " + data.user);
         video.pause();
     });
 
@@ -182,12 +187,12 @@
         }
             
         
-        // console.log("==========")
+        console.log("==========")
     });
 
     socket.on("videoSet", (data) => {
-        // console.log("Got a videoSet signal from " + data.user);
-        // console.log("for video src " + data.video);
+        console.log("Got a videoSet signal from " + data.user);
+        console.log("for video src " + data.video);
         video_player.setAttribute("src", data.video);
         video.load()
     });
