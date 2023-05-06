@@ -2,6 +2,8 @@ from dataclasses import dataclass
 import random
 from typing import Any
 
+from utils.string_utils import random_string
+
 @dataclass
 class User:
     name: str
@@ -18,17 +20,17 @@ class UserManager:
     VALID_CHARS = "0123456789abcdefghijklmnopqrstuvwxyz"
     CHARS_LENGTH_COOKIE = 10
     def _get_random_cookie(self) -> str:
-        result = ''.join(random.choice(self.VALID_CHARS) for _ in range(self.CHARS_LENGTH_COOKIE))
+        result = random_string(self.VALID_CHARS, self.CHARS_LENGTH_COOKIE)
         while self.get_user_from_userid(result):
-            result = ''.join(random.choice(self.VALID_CHARS) for _ in range(self.CHARS_LENGTH_COOKIE))
+            result = random_string(self.VALID_CHARS, self.CHARS_LENGTH_COOKIE)
         return result
     
     VALID_NUMS = "0123456789"
     CHARS_LENGTH_USERNAME = 5
     def _get_random_username(self) -> str:
-        result = "User " + ''.join(random.choice(self.VALID_NUMS) for _ in range(self.CHARS_LENGTH_USERNAME))
+        result = "User " + random_string(self.VALID_NUMS, self.CHARS_LENGTH_USERNAME)
         while self.get_user_from_name(result):
-            result = "User " + ''.join(random.choice(self.VALID_NUMS) for _ in range(self.CHARS_LENGTH_USERNAME))
+            result = "User " + random_string(self.VALID_NUMS, self.CHARS_LENGTH_USERNAME)
         return result
 
     def get_user_from_name(self, name: str) -> User | None:

@@ -39,6 +39,10 @@
 <script>
     // Consts
     const socket = io();
+    // TODO: timeout check here
+    function emitSocket(message, data) {
+        socket.emit(message, data);
+    }
 
     const video_selector_text = document.getElementById("video_selector_text");
     const video_player = document.getElementById("video_player");
@@ -53,8 +57,10 @@
     }
     const user_id = getCookie("user_id")
     const room = "{{ room }}";
+
     // on load
-    socket.emit("joinRoom", {"user_id": user_id, "room_id": room});
+    // Not using emitSocket to bypass the timeout
+    socket.emit("joinRoom", {"user_id": user_id, "room_id": room}); 
 </script>
 
 <script>
@@ -62,7 +68,7 @@
     function set_video() {
         const video_url = video_selector_text.value;
         
-        socket.emit("setVideo", {"video": video_url, "user_id": user_id});
+        emitSocket("setVideo", {"video": video_url, "user_id": user_id});
         
         video_player.setAttribute("src", video_url) 
         video.load()
@@ -70,6 +76,8 @@
 </script>
 
 <script>
+
+
     // Websocket communication
     function updateTimeSocket(time, reason) {
         if (time === undefined)
@@ -84,7 +92,7 @@
             alert("Invalid index");
             return;
         }
-        socket.emit("updateTime", {"time": time, "user_id": user_id, "reason": reason});
+        emitSocket("updateTime", {"time": time, "user_id": user_id, "reason": reason});
     }
 
     let eventCount = 0;
@@ -112,13 +120,13 @@
     // onPause
     video.onpause = () => {
         console.log("pausing")
-        socket.emit("pause", {"user_id": user_id});
+        emitSocket("pause", {"user_id": user_id});
         updateTimeSocket();
     };
     // onPlay
     video.onplay = () => {
         console.log("playing")
-        socket.emit("play", {"user_id": user_id});
+        emitSocket("play", {"user_id": user_id});
         updateTimeSocket();
     };
 </script>
@@ -135,6 +143,12 @@
     // Listeners
     socket.on("userJoin", (name) => {
         console.log("User joined: " + name);
+        // Send back room data for the new client
+        emitSocket("roomData", { 
+            "video_src": video_player.attributes.src.nodeValue,
+            "video_time": video.currentTime,
+            "playing": video.paused // https://stackoverflow.com/a/6877530
+        });
     });
 
     socket.on("play", (data) => {

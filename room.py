@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import random
 
 from user import User
+from utils.string_utils import random_string
 
 # Since the SID changes every refresh, browser change,etc (i think)
 # there's no point in having it in the "User" class
@@ -42,9 +43,9 @@ class RoomManager:
     VALID_ROOM_CHARS = "0123456789"
     ROOM_CHARS_LENGTH = 7
     def _get_random_room_number(self) -> str:
-        result = ''.join(random.choice(self.VALID_ROOM_CHARS) for _ in range(self.ROOM_CHARS_LENGTH))
+        result = random_string(self.VALID_ROOM_CHARS, self.ROOM_CHARS_LENGTH)
         while self.get_room(result):
-            result = ''.join(random.choice(self.VALID_ROOM_CHARS) for _ in range(self.ROOM_CHARS_LENGTH))
+            result = random_string(self.VALID_ROOM_CHARS, self.ROOM_CHARS_LENGTH)
         return result
 
     def get_room(self, id: str) -> Room | None:
