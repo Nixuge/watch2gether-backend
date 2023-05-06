@@ -19,7 +19,7 @@
     <input type="button" value="Set video" onclick="set_video()">
     <br>
     <br>
-    <video controls autoplay id="video">
+    <video controls id="video">
         <source src="/static/test.mp4" type="video/mp4" id="video_player"></video>
     </video>
 </body>
@@ -111,11 +111,13 @@
 
     // onPause
     video.onpause = () => {
+        console.log("pausing")
         socket.emit("pause", {"user_id": user_id});
         updateTimeSocket();
     };
     // onPlay
     video.onplay = () => {
+        console.log("playing")
         socket.emit("play", {"user_id": user_id});
         updateTimeSocket();
     };
@@ -123,6 +125,7 @@
 
 
 <script>
+    //TODO: on initial load, fetch data from other
     // 100ms delay for play/pause as it can cause issues otherwise (repeating play & pause)
     let playPauseTimeout = true
     function setPlayPauseTimeout() { 
