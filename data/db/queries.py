@@ -1,9 +1,11 @@
-CREATE_TABLE_QUERY = """CREATE TABLE IF NOT EXISTS media (
-                    filepath TEXT NOT NULL,
-                    name TEXT NOT NULL,
+class Queries:
+    create_table = """CREATE TABLE IF NOT EXISTS media (
+                        filepath TEXT NOT NULL,
+                        name TEXT NOT NULL,
 
-                    PRIMARY KEY (filepath)
-                    );"""
+                        PRIMARY KEY (filepath)
+                        );"""
 
-def get_add_media_query(filepath: str, name: str):
-    return f"""INSERT INTO media VALUES ('{filepath}', '{name}');"""
+    add_media = """INSERT INTO media VALUES (?, ?);"""
+
+    find_media = """SELECT * FROM media WHERE name LIKE ?;"""

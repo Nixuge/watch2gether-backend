@@ -11,6 +11,4 @@ if __name__ == "__main__":
     Vars.socketio.run(Vars.app, port=2135)
 
 #TODO:
-# -SQL db w existing files
-# -search for above
 # -frontend (vue)

@@ -1,6 +1,6 @@
 import sqlite3
 from flask import g
-from data.db.queries import CREATE_TABLE_QUERY
+from data.db.queries import Queries
 
 from data.vars import Vars
 
@@ -25,5 +25,5 @@ def close_connection(exception):
 # init on first load
 with app.app_context():
     conn = get_db()
-    conn.cursor().execute(CREATE_TABLE_QUERY)
+    conn.cursor().execute(Queries.create_table)
     conn.close()
