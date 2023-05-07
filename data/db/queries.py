@@ -11,6 +11,6 @@ class Queries:
 
     add_media = """INSERT INTO media VALUES (?, ?, ?, ?, ?);""" # TEMPORARY, NOT YET IMPLEMENTED
 
-    find_media = """SELECT * FROM media WHERE name LIKE %?%;"""
+    find_media = """SELECT * FROM media WHERE name LIKE ?;"""
 
     all_media = """SELECT * FROM media;"""

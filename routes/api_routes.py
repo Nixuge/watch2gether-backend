@@ -82,7 +82,7 @@ def find_media():
         if not search or search == '':
             movies = conn.cursor().execute(Queries.all_media).fetchmany(size=10)
         else:
-            movies = conn.cursor().execute(Queries.find_media, (search,)).fetchmany(size=10)
+            movies = conn.cursor().execute(Queries.find_media, (f"%{search}%",)).fetchmany(size=10)
     except Exception as e:
         return f"Error happened while searching db: {e}", 400
 
