@@ -1,0 +1,16 @@
+[Unit]
+Description=Watch2Gether-Backend
+After=network.target
+
+[Service]
+SyslogIdentifier=watch2gether-backend
+Restart=always
+RestartSec=5
+Type=simple
+User=nix
+WorkingDirectory=/home/nix/webservers/watch2gether/backend
+ExecStart=/home/nix/webservers/watch2gether/backend/main.py
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
