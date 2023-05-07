@@ -32,10 +32,18 @@ def get_user_id():
 
     return {"changed": changed, "user_id": user.id}
 
+
 @app.route("/api/new_room", methods=["POST"])
 def new_room():
     room = room_manager.new_room()
     return {"room_id": room.id}
+
+
+def get_ket_or_null(data: dict, key: str):
+    result = data.get(key)
+    if not result or result == '':
+        return None
+    return result
 
 @app.route("/api/add_media", methods=["POST"])
 def add_media():
@@ -48,9 +56,13 @@ def add_media():
     if filepath == '' or name == '':
         return "Bad request. See https://http.cat/400.", 400
 
+    thumbnail = get_ket_or_null(content, "thumbnail")
+    tmdb_id = get_ket_or_null(content, "tmdb_id")
+    imdb_id = get_ket_or_null(content, "imdb_id")
+
     try:
         conn = get_db()
-        conn.cursor().execute(Queries.add_media, (filepath, name))
+        conn.cursor().execute(Queries.add_media, (filepath, name, thumbnail, tmdb_id, imdb_id))
         conn.commit()
     except sqlite3.IntegrityError:
         return "Error sending query to DB (IntegrityError), perhaps try another filename?", 400
@@ -63,15 +75,26 @@ def add_media():
 def find_media():
     content = request.json
     
-    search = content["search"]
+    search = content.get("search")
 
     try:
         conn = get_db()
-        movies = conn.cursor().execute(Queries.find_media, (search,)).fetchmany(size=10)
+        if not search or search == '':
+            movies = conn.cursor().execute(Queries.all_media).fetchmany(size=10)
+        else:
+            movies = conn.cursor().execute(Queries.find_media, (search,)).fetchmany(size=10)
     except Exception as e:
         return f"Error happened while searching db: {e}", 400
 
-    # not really needed (wasting cpu time) but clearer requests
-    movies_formatted = [{"filepath": movie[0], "name": movie[1]} for movie in movies]
+    # not really needed (technically &wasting cpu time) but clearer requests
+    movies_formatted = [
+        {"filepath": movie[0], 
+         "name": movie[1], 
+         "thumbnail": movie[2], 
+         "tmdb_id": movie[3], 
+         "imdb_id": movie[4]
+         } for movie in movies]
 
     return movies_formatted, 200
+
+#TODO: SEE https://developer.themoviedb.org/reference/movie-details AND ADD THIS DATA
