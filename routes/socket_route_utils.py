@@ -23,7 +23,7 @@ video_data_requests: dict[str, UserSidWrapper] = {}
 
 def emit_video_data(user_sid: UserSidWrapper, video: Video):
     # could create another packet but meh, sending 3 diff packets isn't that bad
-    emit_to_user(user_sid, "videoSet", {"user": "sync", "video_name": video.name, "video_src": video.filepath})
-    emit_to_user(user_sid, "timeUpdate", {"user": "sync", "reason": "initialLoad", "time": video.current_timing})
+    emit_to_user(user_sid, "videoSet", {"user": "sync", "video_name": video.name, "video_src": video.src})
+    emit_to_user(user_sid, "timeUpdate", {"user": "sync", "reason": "initialLoad", "time": video.time})
     message = "pause" if video.paused else "play"
     emit_to_user(user_sid, message, {"user": "sync"})

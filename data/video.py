@@ -4,6 +4,6 @@ from dataclasses import dataclass
 @dataclass
 class Video:
     name: str
-    filepath: str
-    current_timing: float
+    src: str
+    time: float
     paused: bool

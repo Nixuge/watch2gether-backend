@@ -12,8 +12,8 @@ socketio = Vars.socketio
 def set_current_room_video(room: Room, data: dict):
     video = room.current_video
     video.name = data.get("video_name")
-    video.filepath = data.get("video_src")
-    video.current_timing = data.get("video_time")
+    video.src = data.get("video_src")
+    video.time = data.get("video_time")
     video.paused = True if data.get("paused") else False
     return video
 

@@ -11,4 +11,6 @@ def update_time(data):
     room = room_manager.get_room_from_user(user)
     if user == None or room == None: return
 
-    emit_to_room(room, "timeUpdate", {"user": user.name, "time": data["time"], "reason": data["reason"]}, user)
+    video = room.current_video
+    video.time = data.get("time")
+    emit_to_room(room, "timeUpdate", {"user": user.name, "time": video.time, "reason": data.get("reason")}, user)

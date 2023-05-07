@@ -11,6 +11,7 @@ def play(data):
     room = room_manager.get_room_from_user(user)
     if user == None or room == None: return
 
+    room.current_video.paused = False
     emit_to_room(room, "play", {"user": user.name}, user)
 
 
@@ -20,4 +21,5 @@ def pause(data):
     room = room_manager.get_room_from_user(user)
     if user == None or room == None: return
 
+    room.current_video.paused = True
     emit_to_room(room, "pause", {"user": user.name}, user)

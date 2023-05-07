@@ -26,7 +26,7 @@ class Room:
         self.id = id
         self.public = public
         self.password = password
-        self.current_video = Video("Default video", "/static/test.mp4", 0, True)
+        self.current_video = Video("Default video", "http://localhost:2135/static/test.mp4", 0, True)
         self.users_sid = []
 
     def get_usersid(self, user: User) -> UserSidWrapper:

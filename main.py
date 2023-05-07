@@ -1,6 +1,7 @@
 #!/bin/python3
+# import routes.html_routes
+
 import routes.api_routes
-import routes.html_routes
 import routes.socket.joinRoom
 import routes.socket.playPause
 import routes.socket.setVideo
@@ -15,6 +16,3 @@ if __name__ == "__main__":
     Vars.socketio.run(Vars.app, port=2135, host="0.0.0.0")
     print("Starting webserver")
     # Vars.socketio.run(Vars.app, port=2135)
-
-#TODO:
-# -frontend (vue)
