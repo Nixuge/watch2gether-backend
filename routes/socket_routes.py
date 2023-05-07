@@ -23,8 +23,8 @@ infoRequests: dict[str, UserSidWrapper] = {}
 
 @socketio.on("joinRoom")
 def join_room(data):
-    user = user_manager.get_user_from_userid(data["user_id"])
-    room = room_manager.get_room(data['room_id']) 
+    user = user_manager.get_user_from_userid(data.get("user_id"))
+    room = room_manager.get_room(data.get("room_id")) 
     if user == None or room == None: return
 
     current_sid = request.sid

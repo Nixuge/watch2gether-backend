@@ -25,6 +25,7 @@
         window.location.href = "/room/" + input.value
     }
 
+    // Should be broken as i changed the api for the vue frontend
     async function new_room() {
         fetch(
             "/api/new_room", { method: "POST"})

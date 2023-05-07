@@ -4,6 +4,7 @@ from flask import redirect, request
 from config.key_loader import get_key
 from data.db.db import get_db
 from data.db.queries import Queries
+from data.user import User
 
 from data.vars import Vars
 
@@ -11,12 +12,30 @@ from data.vars import Vars
 
 app = Vars.app
 room_manager = Vars.room_manager
+user_manager = Vars.user_manager
 key = get_key()
+
+@app.route("/api/get_user_id", methods=["POST"])
+def get_user_id():
+    content = request.json
+    previous_user_id = content.get("current_user_id")
+    had_user_id = (previous_user_id and previous_user_id != "")
+
+    user = None
+    if had_user_id:
+        user = user_manager.get_user_from_userid(previous_user_id)
+    
+    changed = False
+    if not user:
+        user = user_manager.new_user()
+        changed = True
+
+    return {"changed": changed, "user_id": user.id}
 
 @app.route("/api/new_room", methods=["POST"])
 def new_room():
     room = room_manager.new_room()
-    return redirect(f"/room/{room.id}")
+    return {"room_id": room.id}
 
 @app.route("/api/add_media", methods=["POST"])
 def add_media():
