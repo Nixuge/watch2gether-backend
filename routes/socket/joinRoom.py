@@ -1,7 +1,7 @@
 from flask import request
 from data.room import UserSidWrapper
 from data.vars import Vars
-from routes.socket_route_utils import emit_to_room, emit_to_user_str, video_data_requests
+from routes.socket_route_utils import emit_to_room, emit_to_user_str, emit_video_data, video_data_requests
 from utils.string_utils import ALPHABET_NUMBERS, random_string
 
 user_manager = Vars.user_manager
@@ -18,20 +18,20 @@ def join_room(data):
         return
 
 
-    userSid = room.get_usersid(user)
-    if userSid:
-        userSid.sid = current_sid
+    user_sid = room.get_usersid(user)
+    if user_sid:
+        user_sid.sid = current_sid
     else:
-        userSid = UserSidWrapper(user, current_sid)
-        room.users_sid.append(userSid)
+        user_sid = UserSidWrapper(user, current_sid)
+        room.users_sid.append(user_sid)
     
     # invalidate other UserSidWrappers
-    for r in room_manager.rooms: 
-        if r == room: continue
-        for user_sid in r.users_sid:
-            if user_sid.user.id == user.id:
-                print(f"Invalidated room {r.id} for user {user.name}.")
-                r.users_sid.remove(user_sid)
+    for i_room in room_manager.rooms: 
+        if i_room == room: continue
+        for i_user_sid in i_room.users_sid:
+            if i_user_sid.user.id == user.id:
+                print(f"Invalidated room {i_room.id} for user {user.name}.")
+                i_room.users_sid.remove(i_user_sid)
     
     print(f"{user.name} joined room {room.id}.")
     
@@ -39,5 +39,10 @@ def join_room(data):
 
     if len(room.users_sid) > 1: # if not alone 
         update_id = random_string(ALPHABET_NUMBERS, 15)
-        video_data_requests[update_id] = userSid
+        video_data_requests[update_id] = user_sid
         emit_to_room(room, "userJoin", {"name": user.name, "update_id": update_id}, user)
+    
+    # Send a video data packet at joinRoom, then wait for another user to send its packet
+    # This is made so that initial video loadings are usually quicker
+    # & so that if no one responds, you still get a source
+    emit_video_data(user_sid, room.current_video)

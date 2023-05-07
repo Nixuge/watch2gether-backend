@@ -11,4 +11,4 @@ def set_video(data):
     room = room_manager.get_room_from_user(user)
     if user == None or room == None: return
     
-    emit_to_room(room, "videoSet", {"user": user.name, "video": data["video"]}, user)
+    emit_to_room(room, "videoSet", {"user": user.name, "video_name": data.get("video_name"), "video_src": data.get("video_src")}, user)
