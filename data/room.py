@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import random
 
 from data.user import User
+from data.video import Video
 from utils.string_utils import random_string
 
 # Since the SID changes every refresh, browser change,etc (i think)
@@ -18,14 +19,13 @@ class Room:
     id: str
     public: bool # to implement
     password: str | None # to implement
-    current_video: str 
+    current_video: Video 
     users_sid: list[UserSidWrapper]
 
     def __init__(self, id: str, public: bool = False, password: str | None = None) -> None:
         self.id = id
         self.public = public
         self.password = password
-        self.current_video = ""
         self.users_sid = []
 
     def get_usersid(self, user: User) -> UserSidWrapper:
