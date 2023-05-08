@@ -1,5 +1,5 @@
 from data.vars import Vars
-from routes.socket_route_utils import emit_to_room, get_room_user_from_dict
+from routes.socket_route_utils import emit_to_room, get_user_room_from_dict
 
 socketio = Vars.socketio
 user_manager = Vars.user_manager
@@ -7,7 +7,7 @@ room_manager = Vars.room_manager
 
 @socketio.on("setVideo")
 def set_video(data):
-    user, room = get_room_user_from_dict(data)
+    user, room = get_user_room_from_dict(data)
     if user == None or room == None: return
     
     video = room.current_video

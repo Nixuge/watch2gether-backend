@@ -38,8 +38,9 @@ class Room:
         self.current_video = Video("Default video", "http://localhost:2135/static/test.mp4", 0, True)
         self.room_users = []
 
-    def run_timeout_all_users(self, command: COMMAND):
+    def run_timeout_all_users(self, command: COMMAND, exempt: User | None = None):
         for user in self.room_users:
+            if user == exempt: continue
             if not command in user.timeouts:
                 user.timeouts.append(command)
         
@@ -52,7 +53,7 @@ class Room:
             if command in user.timeouts:
                 user.timeouts.remove(command)
 
-    def get_usersid(self, user: User) -> RoomUser:
+    def get_room_user(self, user: User) -> RoomUser:
         for room_user in self.room_users:
             if room_user.user == user:
                 return room_user
@@ -84,8 +85,8 @@ class RoomManager:
     # but oh well
     def get_room_from_user(self, user: User) -> Room | None:
         for room in self.rooms:
-            for user_sid in room.room_users:
-                if user_sid.user == user:
+            for room_user in room.room_users:
+                if room_user.user == user:
                     return room
         return None
 

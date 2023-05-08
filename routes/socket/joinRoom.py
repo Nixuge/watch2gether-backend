@@ -18,20 +18,20 @@ def join_room(data):
         return
 
 
-    user_sid = room.get_usersid(user)
-    if user_sid:
-        user_sid.sid = current_sid
+    room_user = room.get_room_user(user)
+    if room_user:
+        room_user.sid = current_sid
     else:
-        user_sid = RoomUser(user, current_sid)
-        room.room_users.append(user_sid)
+        room_user = RoomUser(user, current_sid)
+        room.room_users.append(room_user)
     
     # invalidate other UserSidWrappers
     for i_room in room_manager.rooms: 
         if i_room == room: continue
-        for i_user_sid in i_room.room_users:
-            if i_user_sid.user.id == user.id:
+        for i_room_user in i_room.room_users:
+            if i_room_user.user.id == user.id:
                 print(f"Invalidated room {i_room.id} for user {user.name}.")
-                i_room.room_users.remove(i_user_sid)
+                i_room.room_users.remove(i_room_user)
     
     print(f"{user.name} joined room {room.id}.")
     
@@ -39,10 +39,10 @@ def join_room(data):
 
     if len(room.room_users) > 1: # if not alone 
         update_id = random_string(ALPHABET_NUMBERS, 15)
-        video_data_requests[update_id] = user_sid
+        video_data_requests[update_id] = room_user
         emit_to_room(room, "userJoin", {"name": user.name, "update_id": update_id}, user)
     
     # Send a video data packet at joinRoom, then wait for another user to send its packet
     # This is made so that initial video loadings are usually quicker
     # & so that if no one responds, you still get a source
-    emit_video_data(user_sid, room.current_video)
+    emit_video_data(room_user, room.current_video)

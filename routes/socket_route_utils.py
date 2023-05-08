@@ -23,15 +23,15 @@ def emit_to_room(room: Room, message: str, data: dict | str, ommited_user: User 
 #TODO: put that inside the room class
 video_data_requests: dict[str, RoomUser] = {}
 
-def emit_video_data(user_sid: RoomUser, video: Video):
+def emit_video_data(room_user: RoomUser, video: Video):
     # could create another packet but meh, sending 3 diff packets isn't that bad
-    emit_to_user(user_sid, "videoSet", {"user": "sync", "video_name": video.name, "video_src": video.src})
-    emit_to_user(user_sid, "timeUpdate", {"user": "sync", "reason": "initialLoad", "time": video.time})
+    emit_to_user(room_user, "videoSet", {"user": "sync", "video_name": video.name, "video_src": video.src})
+    emit_to_user(room_user, "timeUpdate", {"user": "sync", "reason": "initialLoad", "time": video.time})
     message = "pause" if video.paused else "play"
-    emit_to_user(user_sid, message, {"user": "sync"})
+    emit_to_user(room_user, message, {"user": "sync"})
 
 
-def get_user_room_from_dict(data: dict):
+def get_user_room_from_dict(data: dict) -> tuple[User, Room]:
     user = user_manager.get_user_from_flask_dict(data)
     room = room_manager.get_room_from_user(user)
-    return room, user
+    return user, room
