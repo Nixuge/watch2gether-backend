@@ -1,9 +1,8 @@
 
 
-from data.room import Room, UserSidWrapper
+from data.room import Room
 from data.vars import Vars
-from data.video import Video
-from routes.socket_route_utils import emit_to_user, emit_video_data, video_data_requests
+from routes.socket_route_utils import emit_video_data, video_data_requests
 
 user_manager = Vars.user_manager
 room_manager = Vars.room_manager
@@ -19,9 +18,9 @@ def set_current_room_video(room: Room, data: dict):
 
 @socketio.on("videoData")
 def room_data_receive(data):
-    update_id = data["update_id"]
-    user_sid = video_data_requests.get(update_id)
-    if not user_sid:
+    update_id = data.get("update_id")
+    room_user = video_data_requests.get(update_id)
+    if not room_user:
         # Note that this is sent back from all clients
         # (to have the fastest response & avoid having a dead client just send back nothing)
         # So once the first response is proceeded, the user_sid won't be present anymore in the dict
@@ -29,7 +28,7 @@ def room_data_receive(data):
     
     video_data_requests.pop(update_id)
 
-    room = room_manager.get_room_from_user(user_sid.user)
+    room = room_manager.get_room_from_user(room_user.user)
     video = set_current_room_video(room, data)
 
-    emit_video_data(user_sid, video)
+    emit_video_data(room_user, video)

@@ -1,7 +1,5 @@
 
-from dataclasses import dataclass
-import random
-
+import asyncio
 from data.user import User
 from data.video import Video
 from utils.string_utils import random_string
@@ -9,30 +7,55 @@ from utils.string_utils import random_string
 # Since the SID changes every refresh, browser change,etc (i think)
 # there's no point in having it in the "User" class
 # so made a quick wrapper here for that 
-@dataclass
-class UserSidWrapper:
+
+class COMMAND:
+    time = 1
+    playpause = 2
+    
+
+# Basically a wrapper for the User class
+# but with room specific vars like the SID and the timeouts
+class RoomUser:
     user: User
     sid: str
-    
+    timeouts = list[COMMAND]
+    def __init__(self, user: User, sid: str):
+        self.user = user
+        self.sid = sid
+        self.timeouts = []
 
 class Room:
     id: str
     public: bool # to implement
     password: str | None # to implement
     current_video: Video 
-    users_sid: list[UserSidWrapper]
+    room_users: list[RoomUser]
 
     def __init__(self, id: str, public: bool = False, password: str | None = None) -> None:
         self.id = id
         self.public = public
         self.password = password
         self.current_video = Video("Default video", "http://localhost:2135/static/test.mp4", 0, True)
-        self.users_sid = []
+        self.room_users = []
 
-    def get_usersid(self, user: User) -> UserSidWrapper:
-        for user_sid in self.users_sid:
-            if user_sid.user == user:
-                return user_sid
+    def run_timeout_all_users(self, command: COMMAND):
+        for user in self.room_users:
+            if not command in user.timeouts:
+                user.timeouts.append(command)
+        
+        loop = asyncio.get_event_loop()
+        loop.create_task(self._remove_timeout_all_users(command))
+    
+    async def _remove_timeout_all_users(self, command: COMMAND, delay: float = .3):
+        await asyncio.sleep(delay)
+        for user in self.room_users:
+            if command in user.timeouts:
+                user.timeouts.remove(command)
+
+    def get_usersid(self, user: User) -> RoomUser:
+        for room_user in self.room_users:
+            if room_user.user == user:
+                return room_user
         return None
 
 
@@ -61,7 +84,7 @@ class RoomManager:
     # but oh well
     def get_room_from_user(self, user: User) -> Room | None:
         for room in self.rooms:
-            for user_sid in room.users_sid:
+            for user_sid in room.room_users:
                 if user_sid.user == user:
                     return room
         return None
