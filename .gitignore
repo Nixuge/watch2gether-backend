@@ -3,3 +3,5 @@
 *.mkv
 *.db
 key.txt
+
+venv/

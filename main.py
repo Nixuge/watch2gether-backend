@@ -1,4 +1,4 @@
-#!/bin/python3
+#!./venv/bin/python
 # import routes.html_routes
 
 import routes.api_routes

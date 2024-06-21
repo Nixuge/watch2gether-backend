@@ -1,9 +1,9 @@
 [Unit]
-Description=Watch2Gether-Backend
+Description=Watch2GetherBackend
 After=network.target
 
 [Service]
-SyslogIdentifier=watch2gether-backend
+SyslogIdentifier=watch2getherbackend
 Restart=always
 RestartSec=5
 Type=simple
